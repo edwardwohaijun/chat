@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Socket } from "socket.io-client";
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
 import { IMessageList, IChatRoom, IMessage, IProfile } from "../../types";
@@ -6,6 +7,8 @@ import { addMessage } from "../../redux/reducers/messageList";
 import { updateLastMsg } from "../../redux/reducers/chatRoomList";
 import { v4 as uuid } from "uuid";
 import { Input } from "antd";
+import socketConnection from "../../services/socket";
+
 const { TextArea } = Input;
 
 interface IChatWindowProps {
@@ -54,6 +57,12 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   useEffect(() => {
     dummyMsgRef.current?.scrollIntoView();
   }, [room, messageList]);
+
+  useEffect(() => {
+    socketConnection.on("connect", () => {
+      console.log("socket connected ");
+    });
+  });
 
   return (
     <div

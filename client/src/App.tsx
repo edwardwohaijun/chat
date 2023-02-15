@@ -1,4 +1,4 @@
-import React, { Dispatch } from "react";
+import React, { Dispatch, useEffect } from "react";
 // import { AppState } from "./redux/reducers/rootReducer";
 // import { CountActions } from "./redux/actions/countActions";
 // import { NameActions } from "./redux/actions/nameActions";
@@ -35,16 +35,7 @@ function App() {
   const msgList = useSelector(
     (state: RootState) => state.messageList
   ).list.filter((m) => m.roomId === chatRoomList.activeRoomId);
-  // console.log("msgList: ", msgList);
 
-  // let newChatRoom: IChatRoom = { roomId: "123", members: [] };
-
-  // console.log("chatRoomList: ", chatRoomList);
-  /*
-  profile: IProfile; // current user's profile
-  room: IChatRoom; // current active chatRoom
-  messageList: IMessageList; // all msg in current chat room
-  */
   return (
     <div className="App">
       <header className="App-header">app header</header>
