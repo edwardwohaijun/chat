@@ -1,0 +1,10 @@
+.room-item {
+  width: 100%;
+  height: 75px;
+  padding: 8px 0;
+  display: flex;
+  cursor: pointer;
+}
+.room-item.active {
+  background-color: #26252d;
+}

@@ -1,0 +1,67 @@
+$app-header: 50px;
+
+html {
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #0c0e13;
+  height: $app-header;
+
+  color: #46484d;
+}
+
+.App-body {
+  display: flex;
+  height: calc(100vh - $app-header);
+  width: 100vw;
+}
+
+.sidebar {
+  width: 15%;
+  height: calc(100vh - $app-header);
+  background-color: #0c0e13;
+}
+.chat-list {
+  width: 25%;
+  height: calc(100vh - $app-header);
+  background-color: #1d1c21;
+}
+.message-list {
+  width: 60%;
+  height: calc(100vh - $app-header);
+  background-color: #26252c;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
