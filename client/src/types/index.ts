@@ -9,6 +9,7 @@ export interface IChatRoom {
   roomId: string;
   members: string[];
   lastMsg?: IMessage;
+  draft?: string; // 用户输入了一半, 切换到其他chat window, 要把之前的一半文本保存下来, 便于下次切换回来继续输入.
 }
 
 export interface IChatRoomList {
@@ -19,8 +20,9 @@ export interface IChatRoomList {
 export interface IMessage {
   roomId: string;
   messageId: string;
-  sentFrom: string;
-  sentAt: Date;
+  senderProfile: IProfile;
+  // sentFrom: string;
+  sentAt: string;
   content: string;
   type: "TEXT" | "PHOTO" | "FILE";
 }

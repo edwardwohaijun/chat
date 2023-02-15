@@ -12,7 +12,7 @@ export interface Profile {
 
 const initialState: IProfile = {
   userId: "111",
-  nickname: "222",
+  nickname: "Edward",
   avatar: "333",
 };
 

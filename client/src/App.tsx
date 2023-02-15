@@ -20,15 +20,31 @@ import { IChatRoom } from "./types";
 
 function App() {
   const profile = useSelector((state: RootState) => state.profile);
-  console.log("profile: ", profile);
+  // console.log("profile: ", profile);
 
   // const count = useSelector((state: RootState) => state.counter.value);
   const dispatch = useDispatch();
 
-  // const chatRoomList = useSelector((state: RootState) => state.chatRoomList);
+  // const msgList = useSelector((state: RootState) => state.messageList);
+  // console.log("msgList: ", msgList.list);
+
+  const chatRoomList = useSelector((state: RootState) => state.chatRoomList);
+  const activeRoom = chatRoomList.list.find(
+    (r) => r.roomId === chatRoomList.activeRoomId
+  );
+  const msgList = useSelector(
+    (state: RootState) => state.messageList
+  ).list.filter((m) => m.roomId === chatRoomList.activeRoomId);
+  // console.log("msgList: ", msgList);
+
   // let newChatRoom: IChatRoom = { roomId: "123", members: [] };
 
   // console.log("chatRoomList: ", chatRoomList);
+  /*
+  profile: IProfile; // current user's profile
+  room: IChatRoom; // current active chatRoom
+  messageList: IMessageList; // all msg in current chat room
+  */
   return (
     <div className="App">
       <header className="App-header">app header</header>
@@ -40,6 +56,11 @@ function App() {
         </div>
 
         <div className="message-list">
+          <ChatWindow
+            profile={profile}
+            room={activeRoom}
+            messageList={msgList}
+          />
           {/* <div>
             <button
               aria-label="Increment value"

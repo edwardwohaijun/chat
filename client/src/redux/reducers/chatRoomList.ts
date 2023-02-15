@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { IChatRoomList, IChatRoom, IMessage } from "../../types";
 import { v4 as uuid } from "uuid";
 
+// TODO: 如果要删除, 则下面的initialState也要更新, 那里用到了这里的第一个item的roomId.
 let chatRooms: IChatRoom[] = [
   { name: "Announcements", roomId: uuid(), members: [] },
   { name: "Share your story", roomId: uuid(), members: [] },
@@ -14,11 +15,11 @@ let chatRooms: IChatRoom[] = [
 
 const initialState: IChatRoomList = {
   list: chatRooms,
-  activeRoomId: "",
+  activeRoomId: chatRooms[0].roomId,
 };
 
 export const chatRoomListSlice = createSlice({
-  name: "profile",
+  name: "chatRoomList",
   initialState,
   reducers: {
     addChatRoom: (state, action: PayloadAction<IChatRoom>) => {

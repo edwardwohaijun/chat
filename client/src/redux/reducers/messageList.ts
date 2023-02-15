@@ -7,7 +7,7 @@ const initialState: IMessageList = {
 };
 
 export const messageListSlice = createSlice({
-  name: "profile",
+  name: "messageList",
   initialState,
   reducers: {
     addMessage: (state, action: PayloadAction<IMessage>) => {

@@ -13,7 +13,7 @@ import ChatRoom from "./chatRoom";
 
 const ChatRoomList = () => {
   const rooms = useSelector((state: RootState) => state.chatRoomList);
-  console.log("chatRoomList: ", rooms);
+  // console.log("chatRoomList: ", rooms);
 
   const dispatch = useDispatch();
   let newChatRoom: IChatRoom = { name: "hehe", roomId: "123", members: [] };

@@ -2,6 +2,7 @@ $app-header: 50px;
 
 html {
   box-sizing: border-box;
+  caret-color: #ffffff;
 }
 *,
 *::before,
@@ -49,7 +50,7 @@ html {
 }
 .message-list {
   width: 60%;
-  height: calc(100vh - $app-header);
+  height: calc(100vh - $app-header - 100px);
   background-color: #26252c;
 }
 
