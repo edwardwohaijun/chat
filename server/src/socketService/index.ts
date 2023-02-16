@@ -9,12 +9,15 @@ let ALL_USERS: IUserDocument[] = [];
 
 const socketService = (io: any) => {
   io.on("connection", function (socket: any) {
+    console.log("socket connected: ");
     (async () => {
       const profile: IUserDocument | null = await User.findOneAndUpdate(
         { isOnline: false },
         { isOnline: true },
         { returnDocument: "after" }
       ).select(["-isOnline"]); // 随机抽取一个没用到的user profile.
+
+      console.log("profile: ", profile);
 
       if (profile == null) {
         socket.emit("loginResponse", null);
@@ -46,6 +49,13 @@ const socketService = (io: any) => {
         messages: [],
       });
     })();
+
+    socket.on("newMessage", async (m: any) => {
+      console.log("new msg: ", m);
+      socket.to(m.roomId.toString()).emit("newMessage", m);
+      let msg = new Message(m);
+      await msg.save();
+    });
 
     socket.on("disconnect", async () => {
       console.log("user disconnected: ", socket.data.userId);

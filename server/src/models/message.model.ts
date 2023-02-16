@@ -15,14 +15,24 @@ const messageSchema = new Schema(
     roomId: {
       type: Schema.Types.Number,
       required: true,
-      unique: true,
+      unique: false,
     },
     messageId: {
       type: Schema.Types.String,
       required: true,
       unique: true,
     },
-    senderProfile: userSchema,
+    senderProfile: {
+      type: userSchema,
+      required: true,
+      unique: false,
+    },
+    mentions: {
+      type: [Schema.Types.Number],
+      required: false,
+      default: [],
+    },
+
     sentAt: {
       type: Schema.Types.String,
       required: false,

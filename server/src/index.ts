@@ -54,7 +54,8 @@ app.use((req, res, next) => {
   await mongoose.connect("mongodb://127.0.0.1:27017/chat", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    // useCreateIndex: true,
+    autoIndex: false, // 'true' would cause auto index-generation of subdocument.
+    // since indexed fields must be unique, the above option doesn't allow documents with same duplicated subdocument fields
   } as ConnectOptions);
   console.log("connected to mongoDB...");
 
@@ -63,36 +64,6 @@ app.use((req, res, next) => {
 })();
 
 socketService(io);
-
-/*
-mongoose.connect(
-  "mongodb://127.0.0.1:27017/chat",
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    // useCreateIndex: true,
-  } as ConnectOptions,
-  () => {
-    console.log("connected to mongoDB...");
-
-    
-    User.findOne({}).then((u: IUserDocument) => {
-      console.log("got one: ", u);
-    });
-    
-    // const u: IUserDocument =
-    (async function () {
-      const u = new User({ userId: 999, avatar: "999", nickname: "edward wo" });
-      await u.save();
-      // const user = await User.findOne();
-      // console.log("newly creatd user: ", user);
-    const users: IUserDocument[] = await User.find({});
-    console.log("did you find it???");
-    console.log("users: ", users);
-    })();  
-  }
-);
-*/
 
 if (process.env.NODE_ENV !== "test") {
   const server = http.listen(port, function () {

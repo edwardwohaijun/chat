@@ -25,6 +25,7 @@ const userSchema = new Schema(
       // I need this to assign unused profile to newly logged user. It's not needed in real world app.
       type: Schema.Types.Boolean,
       required: true,
+      default: false,
     },
   },
   {

@@ -28,8 +28,8 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
 
-  const profileList = useSelector((state: RootState) => state.profileList);
-  console.log("users: ", profileList);
+  // const profileList = useSelector((state: RootState) => state.profileList);
+  // console.log("users: ", profileList);
 
   const sendMessage = () => {
     if (!room) {
@@ -43,12 +43,12 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     let m: IMessage = {
       roomId: room?.roomId,
       messageId: uuid(),
-      // sentFrom: profile.userId,
       senderProfile: profile,
       sentAt: new Date().toLocaleTimeString(),
       content: msg,
       type: "TEXT",
     };
+    socket.emit("newMessage", m);
     dispatch(addMessage(m));
     dispatch(updateLastMsg(m));
     setMsg("");
@@ -61,7 +61,8 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     }
   };
 
-  // make msgList window alaways scroll to the bottom, but only when msgList, room got changed.
+  // make msgList window alaways scroll to the bottom, but only when msgList or room have changed.
+  // add a dummy invisible div at the bottom, always scroll into this div.
   useEffect(() => {
     dummyMsgRef.current?.scrollIntoView();
   }, [room, messageList]);
@@ -73,6 +74,13 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
         console.log("login response: ", res);
         dispatch(setProfile(res.profile));
         dispatch(initializeChatRooms(res.chatRoomList));
+      });
+
+      socket.on("newMessage", (msg: any) => {
+        let m: IMessage = msg;
+        console.log("incoming msg: ", m);
+        dispatch(addMessage(m));
+        dispatch(updateLastMsg(m));
       });
     });
   }, []);
