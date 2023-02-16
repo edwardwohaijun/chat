@@ -9,6 +9,9 @@ import ChatWindow from "./components/chatWindow";
 
 import type { RootState } from "./redux/store";
 import { useSelector, useDispatch } from "react-redux";
+
+import { login, logout } from "./services/api";
+import socket from "./services/socket";
 import { decrement, increment } from "./redux/reducers/countReducer";
 import {
   addChatRoom,
@@ -16,17 +19,11 @@ import {
   setActive,
   updateLastMsg,
 } from "./redux/reducers/chatRoomList";
+import { initialize } from "./redux/reducers/profileList";
 import { IChatRoom } from "./types";
 
 function App() {
   const profile = useSelector((state: RootState) => state.profile);
-  // console.log("profile: ", profile);
-
-  // const count = useSelector((state: RootState) => state.counter.value);
-  const dispatch = useDispatch();
-
-  // const msgList = useSelector((state: RootState) => state.messageList);
-  // console.log("msgList: ", msgList.list);
 
   const chatRoomList = useSelector((state: RootState) => state.chatRoomList);
   const activeRoom = chatRoomList.list.find(
@@ -44,6 +41,7 @@ function App() {
 
         <div className="chat-list">
           <ChatRoomList />
+          <button onClick={login}>login</button>
         </div>
 
         <div className="message-list">
@@ -52,21 +50,6 @@ function App() {
             room={activeRoom}
             messageList={msgList}
           />
-          {/* <div>
-            <button
-              aria-label="Increment value"
-              onClick={() => dispatch(increment())}
-            >
-              Increment
-            </button>
-            <span>{count}</span>
-            <button
-              aria-label="Decrement value"
-              onClick={() => dispatch(decrement())}
-            >
-              Decrement
-            </button>
-  </div> */}
         </div>
       </div>
     </div>

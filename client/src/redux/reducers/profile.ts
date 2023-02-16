@@ -11,9 +11,9 @@ export interface Profile {
 */
 
 const initialState: IProfile = {
-  userId: "111",
-  nickname: "Edward",
-  avatar: "333",
+  userId: -1,
+  nickname: "",
+  avatar: "",
 };
 
 export const profileSlice = createSlice({

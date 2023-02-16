@@ -12,7 +12,7 @@ import {
 
 interface IChatRoomProps {
   room: IChatRoom;
-  activeRoomId: string;
+  activeRoomId: number;
   setActive: (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 

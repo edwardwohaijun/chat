@@ -16,11 +16,20 @@ const ChatRoomList = () => {
   // console.log("chatRoomList: ", rooms);
 
   const dispatch = useDispatch();
-  let newChatRoom: IChatRoom = { name: "hehe", roomId: "123", members: [] };
+  let newChatRoom: IChatRoom = { name: "hehe", roomId: 999, members: [] };
   // const ChatRoom = ({ name, roomId, members, lastMsg }: IChatRoom) => {
 
   return (
     <div>
+      <div
+        style={{
+          borderBottom: "1px solid #454451",
+          height: "64px",
+          color: "#7B798F",
+        }}
+      >
+        search
+      </div>
       {rooms.list.map((r) => (
         <ChatRoom
           key={r.roomId}

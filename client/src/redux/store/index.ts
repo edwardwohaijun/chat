@@ -12,12 +12,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import profileReducer from "../reducers/profile";
 import messageList from "../reducers/messageList";
 import chatRoomList from "../reducers/chatRoomList";
+import profileList from "../reducers/profileList";
 
 export const store = configureStore({
   reducer: {
     // counter: countReducer,
     // name: nameReducer,
     profile: profileReducer,
+    profileList,
     chatRoomList,
     messageList,
   },

@@ -1,36 +1,50 @@
 import mongoose, { Schema, Model } from "mongoose";
+import { IUserDocument, userSchema } from "./user.model";
 
-interface UserDocument {
-  userId: string;
-  nickname: string;
-  avatar: string;
+interface IMessageDocument {
+  roomId: number;
+  messageId: string;
+  senderProfile: IUserDocument;
+  mentions?: [number];
+  sentAt: string;
+  content: string;
+  type: "TEXT" | "PHOTO" | "FILE";
 }
-const userSchema = new Schema(
+const messageSchema = new Schema(
   {
-    userId: {
+    roomId: {
+      type: Schema.Types.Number,
+      required: true,
+      unique: true,
+    },
+    messageId: {
       type: Schema.Types.String,
       required: true,
       unique: true,
     },
-    nickname: {
-      type: Schema.Types.String,
-      required: true,
-      unique: false,
-    },
-    avatar: {
+    senderProfile: userSchema,
+    sentAt: {
       type: Schema.Types.String,
       required: false,
     },
+    content: {
+      type: Schema.Types.String,
+      required: true,
+    },
+    type: {
+      type: Schema.Types.String,
+      required: true,
+    },
   },
   {
-    collection: "users",
+    collection: "messages",
     timestamps: true,
   }
 );
 
-const User: Model<UserDocument> = mongoose.model<UserDocument>(
-  "User",
-  userSchema
+const Message: Model<IMessageDocument> = mongoose.model<IMessageDocument>(
+  "Message",
+  messageSchema
 );
 
-export { User, UserDocument };
+export { Message, IMessageDocument };

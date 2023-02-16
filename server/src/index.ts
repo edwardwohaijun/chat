@@ -1,10 +1,13 @@
 import express, { Express, Request, Response, NextFunction } from "express";
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 import cors from "cors";
 import { HttpError } from "http-errors";
 import * as socketio from "socket.io";
 import bodyParser from "body-parser";
 import { router } from "./routes/api";
+import { User, IUserDocument } from "./models/user.model";
+import socketService from "./socketService";
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -40,22 +43,56 @@ let io = require("socket.io")(http, {
 });
 const port = process.env.PORT || 3030;
 
-io.on("connection", function (socket: any) {
-  console.log("a user connected");
-  /*
-  socket.on("message", (uid, gid) => {
-    for (const user of userList) {
-      if (gid === user.gid) io.to(user.sid).emit("fetch messages", gid);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    for (let i = 0; i < userList.length; i++) {
-      if (socket.id === userList[i].sid) userList.splice(i, 1);
-    }
-  });
-  */
+/*
+app.use((req, res, next) => {
+  req.io = io;
+  return next();
 });
+*/
+
+(async function () {
+  await mongoose.connect("mongodb://127.0.0.1:27017/chat", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // useCreateIndex: true,
+  } as ConnectOptions);
+  console.log("connected to mongoDB...");
+
+  // const u: IUserDocument | null = await User.findOne({});
+  // console.log("found one: ", u);
+})();
+
+socketService(io);
+
+/*
+mongoose.connect(
+  "mongodb://127.0.0.1:27017/chat",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    // useCreateIndex: true,
+  } as ConnectOptions,
+  () => {
+    console.log("connected to mongoDB...");
+
+    
+    User.findOne({}).then((u: IUserDocument) => {
+      console.log("got one: ", u);
+    });
+    
+    // const u: IUserDocument =
+    (async function () {
+      const u = new User({ userId: 999, avatar: "999", nickname: "edward wo" });
+      await u.save();
+      // const user = await User.findOne();
+      // console.log("newly creatd user: ", user);
+    const users: IUserDocument[] = await User.find({});
+    console.log("did you find it???");
+    console.log("users: ", users);
+    })();  
+  }
+);
+*/
 
 if (process.env.NODE_ENV !== "test") {
   const server = http.listen(port, function () {
@@ -63,10 +100,6 @@ if (process.env.NODE_ENV !== "test") {
     console.log(`[server]: Server is running at https://localhost:${port}`);
   });
 }
-
-mongoose.connect("mongodb://localhost:27017/chat", () => {
-  console.log("connected to mongoDB");
-});
 
 /*
 if (process.env.NODE_ENV !== "test") {

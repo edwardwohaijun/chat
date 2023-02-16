@@ -2,12 +2,17 @@ import React, { useState, useEffect } from "react";
 import { Socket } from "socket.io-client";
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "../../redux/store";
 import { IMessageList, IChatRoom, IMessage, IProfile } from "../../types";
 import { addMessage } from "../../redux/reducers/messageList";
-import { updateLastMsg } from "../../redux/reducers/chatRoomList";
+import {
+  updateLastMsg,
+  initializeChatRooms,
+} from "../../redux/reducers/chatRoomList";
+import { setProfile } from "../../redux/reducers/profile";
 import { v4 as uuid } from "uuid";
 import { Input } from "antd";
-import socketConnection from "../../services/socket";
+import socket from "../../services/socket";
 
 const { TextArea } = Input;
 
@@ -22,6 +27,9 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const [msg, setMsg] = useState("");
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
+
+  const profileList = useSelector((state: RootState) => state.profileList);
+  console.log("users: ", profileList);
 
   const sendMessage = () => {
     if (!room) {
@@ -59,57 +67,78 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   }, [room, messageList]);
 
   useEffect(() => {
-    socketConnection.on("connect", () => {
+    socket.on("connect", () => {
       console.log("socket connected ");
+      socket.on("loginResponse", (res: any) => {
+        console.log("login response: ", res);
+        dispatch(setProfile(res.profile));
+        dispatch(initializeChatRooms(res.chatRoomList));
+      });
     });
-  });
+  }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        justifyContent: "space-between",
-      }}
-    >
+    <div>
       <div
         style={{
-          height: "calc(100vh - 180px)",
-          overflowY: "auto",
-          overflowX: "hidden",
+          borderBottom: "1px solid #454451",
+          height: "64px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0 16px",
+          color: "#FFFFFF",
         }}
       >
-        {messageList.map((m) => (
-          <Message key={m.messageId} msg={m} profile={profile} />
-        ))}
-        <div ref={dummyMsgRef} style={{ visibility: "hidden" }}>
-          placeholder
-        </div>
+        <div style={{ color: "#FFFFFF" }}>{room?.name}</div>
+        <div>members {room?.members.length}</div>
       </div>
-
       <div
         style={{
-          height: "120px",
-          width: "100%",
-          borderTop: "1px solid gray",
-          position: "fixed",
-          bottom: "0",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          justifyContent: "space-between",
         }}
       >
-        <textarea
-          value={msg}
-          onChange={(evt) => setMsg(evt.target.value)}
-          onKeyUp={onKeyUp}
-          rows={4}
+        <div
           style={{
-            backgroundColor: "#26252c",
-            border: "0",
-            color: "#FFFFFF",
-            width: "100%",
-            height: "100%",
+            height: "calc(100vh - 180px - 64px)",
+            overflowY: "auto",
+            overflowX: "hidden",
           }}
-        />
+        >
+          {messageList.map((m) => (
+            <Message key={m.messageId} msg={m} profile={profile} />
+          ))}
+          <div ref={dummyMsgRef} style={{ visibility: "hidden" }}>
+            placeholder
+          </div>
+        </div>
+
+        <div
+          style={{
+            height: "120px",
+            width: "100%",
+            borderTop: "1px solid gray",
+            position: "fixed",
+            bottom: "0",
+          }}
+        >
+          <textarea
+            value={msg}
+            onChange={(evt) => setMsg(evt.target.value)}
+            onKeyUp={onKeyUp}
+            rows={4}
+            style={{
+              backgroundColor: "#26252c",
+              border: "0",
+              color: "#FFFFFF",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
