@@ -10,6 +10,9 @@ export const messageListSlice = createSlice({
   name: "messageList",
   initialState,
   reducers: {
+    initializeMessageList: (state, action: PayloadAction<[IMessage]>) => {
+      state.list = action.payload;
+    },
     addMessage: (state, action: PayloadAction<IMessage>) => {
       state.list.push(action.payload);
     },
@@ -25,6 +28,7 @@ export const messageListSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { addMessage, removeMessage } = messageListSlice.actions;
+export const { initializeMessageList, addMessage, removeMessage } =
+  messageListSlice.actions;
 
 export default messageListSlice.reducer;

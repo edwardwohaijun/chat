@@ -17,20 +17,28 @@
 }
 
 .sent-by-me .content-wrapper {
-  max-width: 80%;
+  max-width: 70%;
+  // padding: 12px;
+  text-align: left;
+}
+
+.sent-by-others .content-wrapper {
+  max-width: 70%;
+  // padding: 12px;
+  text-align: left;
+}
+
+.message-content-by-me {
   padding: 12px;
   background-color: #04b17d;
-  text-align: left;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
 }
 
-.sent-by-others .content-wrapper {
-  max-width: 80%;
+.message-content-by-other {
   padding: 12px;
   background-color: #454451;
-  text-align: left;
   border-top-right-radius: 4px;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;

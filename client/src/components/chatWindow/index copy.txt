@@ -119,7 +119,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
             height: "calc(100vh - 180px - 64px)",
             overflowY: "auto",
             overflowX: "hidden",
-            padding: "8px 6px",
           }}
         >
           {messageList.map((m) => (
@@ -167,52 +166,14 @@ interface IMessageProps {
 
 const Message = ({ msg, profile }: IMessageProps) => {
   let sentByMe = msg.senderProfile.userId === profile.userId;
-  let avatarDiv = (
-    <div>
-      <Avatar style={{ backgroundColor: "#f56a00" }} size="large">
-        {msg.senderProfile.nickname[0]}
-      </Avatar>
-    </div>
-  );
-  let txtDiv = (
-    <div style={sentByMe ? { marginRight: "16px" } : { marginLeft: "16px" }}>
-      <div
-        style={{
-          color: "#C9C7D0",
-          fontSize: "small",
-          marginBottom: "8px",
-          textAlign: sentByMe ? "right" : "unset",
-        }}
-      >
-        <span style={{ marginRight: "12px", color: "#C9C7D0" }}>
-          {msg.senderProfile.nickname}
-        </span>
-        <span style={{ color: "#7B798F" }}>{msg.sentAt}</span>
-      </div>
-      <div
-        className={
-          sentByMe ? "message-content-by-me" : "message-content-by-other"
-        }
-      >
-        {msg.content}
-      </div>
-    </div>
-  );
-
   return (
     <div className={sentByMe ? "sent-by-me" : "sent-by-others"}>
-      <div className="content-wrapper">
-        <div style={{ display: "flex" }}>
-          {sentByMe ? (
-            <React.Fragment>
-              {txtDiv}
-              {avatarDiv}{" "}
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              {avatarDiv} {txtDiv}
-            </React.Fragment>
-          )}
+      <div className="text-wrapper" style={{ display: "flex" }}>
+        <div>
+          <div className="content-wrapper">{msg.content}</div>
+        </div>
+        <div>
+          <Avatar size="large">{profile.nickname[0]}</Avatar>
         </div>
       </div>
     </div>

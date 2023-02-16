@@ -13,11 +13,7 @@ import ChatRoom from "./chatRoom";
 
 const ChatRoomList = () => {
   const rooms = useSelector((state: RootState) => state.chatRoomList);
-  // console.log("chatRoomList: ", rooms);
-
   const dispatch = useDispatch();
-  let newChatRoom: IChatRoom = { name: "hehe", roomId: 999, members: [] };
-  // const ChatRoom = ({ name, roomId, members, lastMsg }: IChatRoom) => {
 
   return (
     <div>
@@ -38,11 +34,6 @@ const ChatRoomList = () => {
           setActive={() => dispatch(setActive(r.roomId))}
         />
       ))}
-
-      <div></div>
-      <button onClick={() => dispatch(addChatRoom(newChatRoom))}>
-        add chatroom
-      </button>
     </div>
   );
 };

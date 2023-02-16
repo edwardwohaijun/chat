@@ -10,18 +10,6 @@ import ChatWindow from "./components/chatWindow";
 import type { RootState } from "./redux/store";
 import { useSelector, useDispatch } from "react-redux";
 
-import { login, logout } from "./services/api";
-import socket from "./services/socket";
-import { decrement, increment } from "./redux/reducers/countReducer";
-import {
-  addChatRoom,
-  removeChatRoom,
-  setActive,
-  updateLastMsg,
-} from "./redux/reducers/chatRoomList";
-import { initialize } from "./redux/reducers/profileList";
-import { IChatRoom } from "./types";
-
 function App() {
   const profile = useSelector((state: RootState) => state.profile);
 
@@ -41,7 +29,6 @@ function App() {
 
         <div className="chat-list">
           <ChatRoomList />
-          <button onClick={login}>login</button>
         </div>
 
         <div className="message-list">

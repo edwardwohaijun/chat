@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 // import "./App.scss";
-import { Avatar, Space } from "antd";
+import { Avatar } from "antd";
 import { IChatRoom } from "../../types";
 import {
   addChatRoom,
