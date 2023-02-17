@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Avatar } from "antd";
-import { BsPeople } from "react-icons/bs";
+import { BsPeople, BsEmojiSmile } from "react-icons/bs";
+import { MdOutlineAlternateEmail } from "react-icons/md";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
@@ -21,8 +23,6 @@ import { v4 as uuid } from "uuid";
 import { Input } from "antd";
 import socket from "../../services/socket";
 
-const { TextArea } = Input;
-
 interface IChatWindowProps {
   profile: IProfile; // current user's profile
   room: IChatRoom | undefined; // current active chatRoom. active room could be null
@@ -33,11 +33,18 @@ interface IChatWindowProps {
 const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const [msg, setMsg] = useState("");
   let [membersPopupVisible, setMembersPopupVisible] = useState(false);
+  let [emojiVisible, setEmojiVisible] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const curserPos = useRef(msg.length);
+
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
+
   const togglePopup = () => {
     setMembersPopupVisible(!membersPopupVisible);
   };
+
+  const toggleEmoji = () => setEmojiVisible(!emojiVisible);
 
   const sendMessage = () => {
     if (!room) {
@@ -62,18 +69,48 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     setMsg("");
   };
 
-  const onKeyUp = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  // const onKeyUp = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const onKeyUp = (evt: any) => {
+    // console.log("start: ", evt.target.selectionStart);
+    // people might not be typing text, but pressing arrow key to move cursor position.
+    curserPos.current = inputRef.current!.selectionStart;
     if (evt.key.toLowerCase() === "enter" && evt.shiftKey) {
     } else if (evt.key.toLowerCase() === "enter") {
       sendMessage();
     }
   };
 
+  useEffect(() => {
+    if (inputRef === null) return;
+    if (inputRef.current === null) return;
+
+    // inputRef.current.setSelectionRange(curserPos.current, curserPos.current);
+  }, [msg]);
+
   // make msgList window alaways scroll to the bottom, but only when msgList or room have changed.
   // add a dummy invisible div at the bottom, always scroll into this div.
   useEffect(() => {
     dummyMsgRef.current?.scrollIntoView();
   }, [room, messageList]);
+
+  useEffect(() => {
+    const hideEmoji = (evt: MouseEvent) => {
+      console.log("clicing...", evt.target);
+      if (
+        (evt.target as HTMLElement).closest(".emoji-button-wrapper") != null
+      ) {
+        console.log("emoji button clicked");
+        toggleEmoji();
+        return;
+      }
+      if ((evt.target as HTMLElement).closest(".emoji-wrapper") == null) {
+        setEmojiVisible(false);
+      }
+    };
+
+    document.addEventListener("click", hideEmoji);
+    return () => document.removeEventListener("click", hideEmoji);
+  }, []);
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -125,7 +162,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       >
         <div
           style={{
-            height: "calc(100vh - 180px - 64px)",
+            height: "calc(100vh - 180px - 64px - 48px)",
             overflowY: "auto",
             overflowX: "hidden",
             padding: "8px 6px",
@@ -140,12 +177,53 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
         </div>
 
         <div className="chat-input-wrapper ">
+          <div
+            className="chat-toolbar"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+
+              width: "100px",
+              height: "42px",
+            }}
+          >
+            <div className="emoji-button-wrapper">
+              <BsEmojiSmile
+                style={{ color: "#FFFFFF", cursor: "pointer" }}
+                size="1.5em"
+              />
+            </div>
+            <div className="mention-button-wrapper">
+              <MdOutlineAlternateEmail
+                style={{ color: "#FFFFFF", cursor: "pointer" }}
+                size="1.5em"
+              />
+            </div>
+          </div>
+          <div className={`emoji-wrapper ${emojiVisible ? "" : "invisible"}`}>
+            <EmojiPicker
+              height={450}
+              width={320}
+              onEmojiClick={(emojiData: EmojiClickData, event: MouseEvent) => {
+                console.log("emojiData: ", emojiData);
+                let newMsg =
+                  msg.substring(0, curserPos.current) +
+                  emojiData.emoji +
+                  msg.substring(curserPos.current);
+                setMsg(newMsg);
+                toggleEmoji();
+                inputRef.current?.focus();
+              }}
+            />
+          </div>
           <textarea
             id="chat-input-box"
             value={msg}
             onChange={(evt) => setMsg(evt.target.value)}
             onKeyUp={onKeyUp}
-            rows={4}
+            rows={6}
+            ref={inputRef}
           />
         </div>
       </div>

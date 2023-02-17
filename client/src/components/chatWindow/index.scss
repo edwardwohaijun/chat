@@ -29,16 +29,17 @@
   overflow: auto;
   border-radius: 8px;
   background-color: #454451;
+  z-index: 1;
 }
 .room-member-list.invisible {
   visibility: hidden;
 }
 
 .chat-input-wrapper {
-  height: 120px;
+  height: 132px;
   width: 100%;
   border-top: 1px solid gray;
-  position: fixed;
+  // position: fixed;
   bottom: 0;
 }
 #chat-input-box {
@@ -47,6 +48,14 @@
   color: #ffffff;
   width: 100%;
   height: 100%;
+  padding: 16px;
+  resize: none;
+}
+textarea:focus,
+input:focus {
+  outline: none;
+  resize: none;
+  overflow-y: scroll;
 }
 
 .sent-by-me {
@@ -82,6 +91,7 @@
 .message-content-by-me {
   padding: 12px;
   background-color: #04b17d;
+  font-size: larger;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -90,7 +100,16 @@
 .message-content-by-other {
   padding: 12px;
   background-color: #454451;
+  font-size: larger;
   border-top-right-radius: 6px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+}
+
+.emoji-wrapper {
+  position: absolute;
+  bottom: 178px;
+}
+.emoji-wrapper.invisible {
+  display: none;
 }
