@@ -39,6 +39,23 @@ export const chatRoomListSlice = createSlice({
     },
     setActive: (state, action: PayloadAction<number>) => {
       state.activeRoomId = action.payload;
+      // clear unread count badge
+      let idx = state.list.findIndex((r) => r.roomId === action.payload);
+      state.list[idx].unreadCount = 0;
+    },
+    updateUnreadCount: (state, action: PayloadAction<IMessage>) => {
+      if (action.payload.roomId !== state.activeRoomId) {
+        let idx = state.list.findIndex(
+          (r) => r.roomId === action.payload.roomId
+        );
+        if (idx !== -1) {
+          if (state.list[idx].unreadCount == null) {
+            state.list[idx].unreadCount = 1;
+          } else {
+            state.list[idx].unreadCount!++;
+          }
+        }
+      }
     },
     updateLastMsg: (state, action: PayloadAction<IMessage>) => {
       let roomIdx = state.list.findIndex(
@@ -57,6 +74,7 @@ export const {
   addChatRoom,
   removeChatRoom,
   setActive,
+  updateUnreadCount,
   updateLastMsg,
 } = chatRoomListSlice.actions;
 

@@ -13,6 +13,7 @@ import { initializeProfileList } from "../../redux/reducers/profileList";
 import {
   updateLastMsg,
   initializeChatRooms,
+  updateUnreadCount,
 } from "../../redux/reducers/chatRoomList";
 import { setProfile } from "../../redux/reducers/profile";
 import { v4 as uuid } from "uuid";
@@ -32,9 +33,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const [msg, setMsg] = useState("");
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
-
-  // const profileList = useSelector((state: RootState) => state.profileList);
-  // console.log("users: ", profileList);
 
   const sendMessage = () => {
     if (!room) {
@@ -84,8 +82,10 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       });
 
       socket.on("newMessage", (m: any) => {
+        // console.log("what happened, why so many new msg");
         dispatch(addMessage(m));
         dispatch(updateLastMsg(m));
+        dispatch(updateUnreadCount(m));
       });
     });
   }, []);

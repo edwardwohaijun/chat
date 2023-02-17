@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 // import "./App.scss";
-import { Avatar } from "antd";
+import { Avatar, Badge } from "antd";
 import { IChatRoom } from "../../types";
 import {
   addChatRoom,
@@ -31,7 +31,9 @@ const ChatRoom = ({ room, activeRoomId, setActive }: IChatRoomProps) => {
       onClick={setActive}
     >
       <div style={{ width: "20%" }}>
-        <Avatar size="large">{room.name[0]}</Avatar>
+        <Badge count={room.unreadCount}>
+          <Avatar size="large">{room.name[0]}</Avatar>
+        </Badge>
       </div>
       <div style={{ width: "80%", marginLeft: "8px", paddingRight: "8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between" }}>

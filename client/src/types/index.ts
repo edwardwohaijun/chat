@@ -14,6 +14,7 @@ export interface IChatRoom {
   name: string;
   roomId: number;
   members: number[];
+  unreadCount?: number; // on login, it's from backend(not implemented yet), after that, it get updated from local
   lastMsg?: IMessage;
   draft?: string; // 用户输入了一半, 切换到其他chat window, 要把之前的一半文本保存下来, 便于下次切换回来继续输入.
 }
