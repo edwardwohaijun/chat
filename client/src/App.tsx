@@ -3,6 +3,7 @@ import React, { Dispatch, useEffect } from "react";
 // import { CountActions } from "./redux/actions/countActions";
 // import { NameActions } from "./redux/actions/nameActions";
 import "./App.scss";
+import AppHeader from "./components/appHeader";
 import Sidebar from "./components/sidebar";
 import ChatRoomList from "./components/chatRoomList";
 import ChatWindow from "./components/chatWindow";
@@ -23,7 +24,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">app header</header>
+      <div className="App-header">
+        <AppHeader />
+      </div>
       <div className="App-body">
         <Sidebar />
 

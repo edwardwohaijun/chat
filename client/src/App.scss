@@ -26,9 +26,12 @@ html {
 }
 
 .App-header {
-  background-color: #0c0e13;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  width: 100%;
   height: $app-header;
-
+  background-color: #0c0e13;
   color: #46484d;
 }
 
@@ -58,11 +61,14 @@ html {
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: transparent;
 }

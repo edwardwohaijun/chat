@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Socket } from "socket.io-client";
 import { Avatar } from "antd";
+import { BsPeople } from "react-icons/bs";
+
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
@@ -31,8 +32,12 @@ interface IChatWindowProps {
 
 const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const [msg, setMsg] = useState("");
+  let [membersPopupVisible, setMembersPopupVisible] = useState(false);
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
+  const togglePopup = () => {
+    setMembersPopupVisible(!membersPopupVisible);
+  };
 
   const sendMessage = () => {
     if (!room) {
@@ -92,20 +97,24 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
 
   return (
     <div>
-      <div
-        style={{
-          borderBottom: "1px solid #454451",
-          height: "64px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "0 16px",
-          color: "#FFFFFF",
-        }}
-      >
-        <div style={{ color: "#FFFFFF" }}>{room?.name}</div>
-        <div>members {room?.members.length}</div>
+      <div className="header-wrapper">
+        <div style={{ color: "#FFFFFF", fontSize: "larger" }}>{room?.name}</div>
+        <div className="group-member-icon-wrapper" onClick={togglePopup}>
+          <BsPeople size="1.5em" />{" "}
+          <span style={{ marginLeft: "8px", fontSize: "small" }}>
+            {room?.members.length}
+          </span>
+        </div>
+
+        {room && (
+          <MemberList
+            members={room.members}
+            isVisible={membersPopupVisible}
+            toggleVisibility={setMembersPopupVisible}
+          />
+        )}
       </div>
+
       <div
         style={{
           display: "flex",
@@ -130,27 +139,13 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
           </div>
         </div>
 
-        <div
-          style={{
-            height: "120px",
-            width: "100%",
-            borderTop: "1px solid gray",
-            position: "fixed",
-            bottom: "0",
-          }}
-        >
+        <div className="chat-input-wrapper ">
           <textarea
+            id="chat-input-box"
             value={msg}
             onChange={(evt) => setMsg(evt.target.value)}
             onKeyUp={onKeyUp}
             rows={4}
-            style={{
-              backgroundColor: "#26252c",
-              border: "0",
-              color: "#FFFFFF",
-              width: "100%",
-              height: "100%",
-            }}
           />
         </div>
       </div>
@@ -159,6 +154,60 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
 };
 
 export default ChatWindow;
+
+const MemberList = ({
+  members,
+  isVisible,
+  toggleVisibility,
+}: {
+  members: number[];
+  isVisible: boolean;
+  toggleVisibility: (v: boolean) => void;
+}) => {
+  const profileList = useSelector((state: RootState) => state.profileList);
+
+  const hidePopup = (evt: MouseEvent) => {
+    // accessing membersPopupVisible always return false, no idea why
+    if (
+      // this is the toggle button for pop-up, we let button handle the visibility
+      (evt.target as HTMLElement).closest(".group-member-icon-wrapper") != null
+    ) {
+      return;
+    }
+    // if mouse click happens outside the pop-up, close it.
+    if ((evt.target as HTMLElement).closest(".room-member-list") == null) {
+      toggleVisibility(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", hidePopup);
+    return () => document.removeEventListener("click", hidePopup);
+  }, []);
+
+  return (
+    <div className={`room-member-list ${isVisible ? "" : "invisible"}`}>
+      {members.map((m) => {
+        let user = profileList.list.find((p) => p.userId === m);
+
+        return (
+          <div
+            key={m}
+            style={{ display: "flex", alignItems: "center", height: "48px" }}
+          >
+            <div style={{ width: "30%" }}>
+              <Avatar>{user?.nickname[0]}</Avatar>
+            </div>
+
+            <span style={{ width: "70%", color: "white", textAlign: "left" }}>
+              {user?.nickname}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 interface IMessageProps {
   msg: IMessage;

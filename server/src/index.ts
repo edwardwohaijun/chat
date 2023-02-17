@@ -58,6 +58,8 @@ app.use((req, res, next) => {
     // since indexed fields must be unique, the above option doesn't allow documents with same duplicated subdocument fields
   } as ConnectOptions);
   console.log("connected to mongoDB...");
+  // when app start, reset all online to false, otherwise, those fake 'online' users still hold the account.
+  await User.updateMany({}, { $set: { isOnline: false } });
 
   // const u: IUserDocument | null = await User.findOne({});
   // console.log("found one: ", u);
