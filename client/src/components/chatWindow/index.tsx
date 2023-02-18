@@ -21,7 +21,8 @@ import {
 import { setProfile } from "../../redux/reducers/profile";
 import { v4 as uuid } from "uuid";
 import { Input } from "antd";
-import socket from "../../services/socket";
+import Socket from "../../services/socket";
+const socket = Socket.getInstance();
 
 interface IChatWindowProps {
   profile: IProfile; // current user's profile
@@ -34,17 +35,16 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   const [msg, setMsg] = useState("");
   let [membersPopupVisible, setMembersPopupVisible] = useState(false);
   let [emojiVisible, setEmojiVisible] = useState(false);
+  let [mentionListVisible, setMentionListVisible] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const curserPos = useRef(msg.length);
 
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
 
-  const togglePopup = () => {
-    setMembersPopupVisible(!membersPopupVisible);
-  };
-
+  const togglePopup = () => setMembersPopupVisible(!membersPopupVisible);
   const toggleEmoji = () => setEmojiVisible(!emojiVisible);
+  const toggleMention = () => setMentionListVisible(!mentionListVisible);
 
   const sendMessage = () => {
     if (!room) {
@@ -80,12 +80,13 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     }
   };
 
+  /*
   useEffect(() => {
     if (inputRef === null) return;
     if (inputRef.current === null) return;
-
     // inputRef.current.setSelectionRange(curserPos.current, curserPos.current);
   }, [msg]);
+  */
 
   // make msgList window alaways scroll to the bottom, but only when msgList or room have changed.
   // add a dummy invisible div at the bottom, always scroll into this div.
@@ -95,15 +96,12 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
 
   useEffect(() => {
     const hideEmoji = (evt: MouseEvent) => {
-      console.log("clicing...", evt.target);
-      if (
-        (evt.target as HTMLElement).closest(".emoji-button-wrapper") != null
-      ) {
-        console.log("emoji button clicked");
+      let tgt = evt.target as HTMLElement;
+      if (tgt.closest(".emoji-button-wrapper") != null) {
         toggleEmoji();
         return;
       }
-      if ((evt.target as HTMLElement).closest(".emoji-wrapper") == null) {
+      if (tgt.closest(".emoji-wrapper") == null) {
         setEmojiVisible(false);
       }
     };
@@ -124,10 +122,19 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       });
 
       socket.on("newMessage", (m: any) => {
-        // console.log("what happened, why so many new msg");
+        console.log("what happened, why so many new msg");
         dispatch(addMessage(m));
         dispatch(updateLastMsg(m));
         dispatch(updateUnreadCount(m));
+      });
+
+      socket.on("disconnect", (reason: string) => {
+        if (reason === "io server disconnect") {
+          console.log("disconnected by server)");
+          // the disconnection was initiated by the server, you need to reconnect manually
+          socket.connect();
+        }
+        // else the socket will automatically try to reconnect
       });
     });
   }, []);
@@ -152,22 +159,8 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
         )}
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          justifyContent: "space-between",
-        }}
-      >
-        <div
-          style={{
-            height: "calc(100vh - 180px - 64px - 48px)",
-            overflowY: "auto",
-            overflowX: "hidden",
-            padding: "8px 6px",
-          }}
-        >
+      <div className="chat-window-wrapper">
+        <div className="message-list-wrapper">
           {messageList.map((m) => (
             <Message key={m.messageId} msg={m} profile={profile} />
           ))}
@@ -177,17 +170,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
         </div>
 
         <div className="chat-input-wrapper ">
-          <div
-            className="chat-toolbar"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-evenly",
-
-              width: "100px",
-              height: "42px",
-            }}
-          >
+          <div className="chat-toolbar">
             <div className="emoji-button-wrapper">
               <BsEmojiSmile
                 style={{ color: "#FFFFFF", cursor: "pointer" }}
@@ -217,6 +200,21 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
               }}
             />
           </div>
+          <div className={`memtion-list-wrapper `}>
+            {room && (
+              <MentionList
+                members={room.members}
+                isVisible={mentionListVisible}
+              />
+            )}
+          </div>
+
+          {/* const  = ({
+  members,
+  isVisible,
+  toggleVisibility,
+  */}
+
           <textarea
             id="chat-input-box"
             value={msg}
@@ -274,10 +272,61 @@ const MemberList = ({
             style={{ display: "flex", alignItems: "center", height: "48px" }}
           >
             <div style={{ width: "30%" }}>
-              <Avatar>{user?.nickname[0]}</Avatar>
+              <Avatar src={`/chat/images/avatar/${user?.userId}.jpg`} />
             </div>
 
             <span style={{ width: "70%", color: "white", textAlign: "left" }}>
+              {user?.nickname}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// <MentionList members={room?.members} isVisible={mentionListVisible} toggleVisibility={mentionListVisible} />
+const MentionList = ({
+  members,
+  isVisible,
+}: // toggleVisibility,
+{
+  members: number[];
+  isVisible: boolean;
+  // toggleVisibility: (v: boolean) => void;
+}) => {
+  const profileList = useSelector((state: RootState) => state.profileList);
+
+  /*
+  const hideMentionList = (evt: MouseEvent) => {
+    if (
+      (evt.target as HTMLElement).closest(".emoji-button-wrapper") != null
+    ) {
+      toggleEmoji();
+      return;
+    }
+    if ((evt.target as HTMLElement).closest(".emoji-wrapper") == null) {
+      setEmojiVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", hideMentionList);
+    return () => document.removeEventListener("click", hideMentionList);
+  }, []);
+  */
+
+  return (
+    <div className={`mention-list ${isVisible ? "" : "invisible"}`}>
+      {members.map((m) => {
+        let user = profileList.list.find((p) => p.userId === m);
+
+        return (
+          <div className="mention-item" key={m}>
+            <div style={{ width: "30%" }}>
+              <Avatar src={`/chat/images/avatar/${user?.userId}.jpg`} />
+            </div>
+            <span style={{ width: "70%", textAlign: "left" }}>
               {user?.nickname}
             </span>
           </div>
@@ -296,9 +345,10 @@ const Message = ({ msg, profile }: IMessageProps) => {
   let sentByMe = msg.senderProfile.userId === profile.userId;
   let avatarDiv = (
     <div>
-      <Avatar style={{ backgroundColor: "#f56a00" }} size="large">
+      {/*<Avatar style={{ backgroundColor: "#f56a00" }} size="large">
         {msg.senderProfile.nickname[0]}
-      </Avatar>
+  </Avatar>*/}
+      <Avatar src={`/chat/images/avatar/${msg.senderProfile.userId}.jpg`} />
     </div>
   );
   let txtDiv = (
@@ -317,9 +367,8 @@ const Message = ({ msg, profile }: IMessageProps) => {
         <span style={{ color: "#7B798F" }}>{msg.sentAt}</span>
       </div>
       <div
-        className={
-          sentByMe ? "message-content-by-me" : "message-content-by-other"
-        }
+        className={`message-content '
+          ${sentByMe ? "by-me" : "by-other"}`}
       >
         {msg.content}
       </div>
