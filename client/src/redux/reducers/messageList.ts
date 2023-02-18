@@ -1,6 +1,6 @@
 import { createSlice, isAsyncThunkAction } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { IMessageList, IMessage } from "../../types";
+import { IMessageList, IMessage, messageIdUpdateType } from "../../types";
 
 const initialState: IMessageList = {
   list: [],
@@ -12,6 +12,13 @@ export const messageListSlice = createSlice({
   reducers: {
     initializeMessageList: (state, action: PayloadAction<[IMessage]>) => {
       state.list = action.payload;
+    },
+    updateMessageId: (state, action: PayloadAction<messageIdUpdateType>) => {
+      // TODO: use findLastIndex.
+      let idx = state.list.findIndex((m) => m.messageId === action.payload.old);
+      if (idx !== -1) {
+        state.list[idx]._id = action.payload.new;
+      }
     },
     addMessage: (state, action: PayloadAction<IMessage>) => {
       state.list.push(action.payload);
@@ -28,7 +35,11 @@ export const messageListSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { initializeMessageList, addMessage, removeMessage } =
-  messageListSlice.actions;
+export const {
+  initializeMessageList,
+  updateMessageId,
+  addMessage,
+  removeMessage,
+} = messageListSlice.actions;
 
 export default messageListSlice.reducer;

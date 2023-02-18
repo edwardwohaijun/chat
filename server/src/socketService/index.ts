@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User, IUserDocument } from "../models/user.model";
 import { Chatroom, IChatRoomDocument } from "../models/chatRoom.model";
 import { Message, IMessageDocument } from "../models/message.model";
@@ -40,9 +41,13 @@ const socketService = (io: any) => {
       console.log("joined room by this socket: ", socket.rooms);
 
       // get the latest 100 message, sorted by submission,
+      /*
       let msgList: IMessageDocument[] = await Message.find({}).sort({
         createdAt: 1,
       });
+      */
+
+      const msgList = await Message.find({}).populate("quote").exec();
 
       socket.data.userId = profile?.userId;
       socket.emit("loginResponse", {
@@ -55,7 +60,14 @@ const socketService = (io: any) => {
 
     socket.on("newMessage", async (m: any) => {
       console.log("new msg: ", m);
+      let _id = new mongoose.Types.ObjectId();
+      console.log("i created a _id: ", _id);
+      m._id = _id;
+      socket.emit("newMessageId", { old: "messageId", new: _id });
       socket.to(m.roomId.toString()).emit("newMessage", m);
+      if (m.quote != null) {
+        m.quote = m.quote._id;
+      }
       let msg = new Message(m);
       await msg.save();
     });

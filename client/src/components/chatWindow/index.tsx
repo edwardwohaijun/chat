@@ -2,14 +2,24 @@ import React, { useState, useEffect, useRef } from "react";
 import { Avatar } from "antd";
 import { BsPeople, BsEmojiSmile } from "react-icons/bs";
 import { MdOutlineAlternateEmail } from "react-icons/md";
+import { FaQuoteLeft } from "react-icons/fa";
+import { RiDeleteBin5Line } from "react-icons/ri";
+import { RxCross2 } from "react-icons/rx";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
-import { IMessageList, IChatRoom, IMessage, IProfile } from "../../types";
+import {
+  IMessageList,
+  messageIdUpdateType,
+  IChatRoom,
+  IMessage,
+  IProfile,
+} from "../../types";
 import {
   initializeMessageList,
+  updateMessageId,
   addMessage,
 } from "../../redux/reducers/messageList";
 import { initializeProfileList } from "../../redux/reducers/profileList";
@@ -20,7 +30,6 @@ import {
 } from "../../redux/reducers/chatRoomList";
 import { setProfile } from "../../redux/reducers/profile";
 import { v4 as uuid } from "uuid";
-import { Input } from "antd";
 import Socket from "../../services/socket";
 const socket = Socket.getInstance();
 
@@ -36,8 +45,12 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   let [membersPopupVisible, setMembersPopupVisible] = useState(false);
   let [emojiVisible, setEmojiVisible] = useState(false);
   let [mentionListVisible, setMentionListVisible] = useState(false);
+  const [mentioned, setMentioned] = useState({}); // key: userId, value: nickname. after sending the msg, reset this obj.
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const curserPos = useRef(msg.length);
+  const [quote, setQuote] = useState<IMessage | null>(null);
+
+  const profileList = useSelector((state: RootState) => state.profileList);
 
   const dispatch = useDispatch();
   const dummyMsgRef = React.useRef<HTMLDivElement>(null);
@@ -61,12 +74,33 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       senderProfile: profile,
       sentAt: new Date().toLocaleTimeString(),
       content: msg,
+      // quote: quote,
       type: "TEXT",
     };
+    if (quote != null) m.quote = quote;
     socket.emit("newMessage", m);
     dispatch(addMessage(m));
     dispatch(updateLastMsg(m));
     setMsg("");
+    setQuote(null);
+    setMentioned({});
+  };
+
+  const onMentionSelect = (evt: any) => {
+    // onclick is defined on the parent div, but click might occur on 2 children div
+    // we need to go up and search for parent class, and get the data attribute.
+    let tgt = evt.target.closest(".mention-item");
+    console.log("on mention select: ", tgt.dataset.mentionId);
+    let mentionedId = Number(tgt.dataset.mentionId);
+    let user = profileList.list.find((p) => p.userId === mentionedId);
+    let newMsg =
+      msg.substring(0, curserPos.current) +
+      `@${user?.nickname} ` +
+      msg.substring(curserPos.current);
+    setMsg(newMsg);
+    setMentionListVisible(false);
+    inputRef.current?.focus();
+    setMentioned({ ...mentioned, [mentionedId]: user?.nickname });
   };
 
   // const onKeyUp = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -98,7 +132,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     const hideEmoji = (evt: MouseEvent) => {
       let tgt = evt.target as HTMLElement;
       if (tgt.closest(".emoji-button-wrapper") != null) {
-        toggleEmoji();
         return;
       }
       if (tgt.closest(".emoji-wrapper") == null) {
@@ -122,10 +155,14 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       });
 
       socket.on("newMessage", (m: any) => {
-        console.log("what happened, why so many new msg");
+        console.log("what happened, why so many new msg", m);
         dispatch(addMessage(m));
         dispatch(updateLastMsg(m));
         dispatch(updateUnreadCount(m));
+      });
+
+      socket.on("newMessageId", (id: messageIdUpdateType) => {
+        dispatch(updateMessageId(id));
       });
 
       socket.on("disconnect", (reason: string) => {
@@ -139,6 +176,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     });
   }, []);
 
+  // console.log("mentioned: ", mentioned);
   return (
     <div>
       <div className="header-wrapper">
@@ -162,7 +200,12 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       <div className="chat-window-wrapper">
         <div className="message-list-wrapper">
           {messageList.map((m) => (
-            <Message key={m.messageId} msg={m} profile={profile} />
+            <Message
+              key={m.messageId}
+              msg={m}
+              profile={profile}
+              setQuote={setQuote}
+            />
           ))}
           <div ref={dummyMsgRef} style={{ visibility: "hidden" }}>
             placeholder
@@ -175,12 +218,14 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
               <BsEmojiSmile
                 style={{ color: "#FFFFFF", cursor: "pointer" }}
                 size="1.5em"
+                onClick={toggleEmoji}
               />
             </div>
             <div className="mention-button-wrapper">
               <MdOutlineAlternateEmail
                 style={{ color: "#FFFFFF", cursor: "pointer" }}
                 size="1.5em"
+                onClick={toggleMention}
               />
             </div>
           </div>
@@ -189,7 +234,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
               height={450}
               width={320}
               onEmojiClick={(emojiData: EmojiClickData, event: MouseEvent) => {
-                console.log("emojiData: ", emojiData);
                 let newMsg =
                   msg.substring(0, curserPos.current) +
                   emojiData.emoji +
@@ -200,20 +244,19 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
               }}
             />
           </div>
-          <div className={`memtion-list-wrapper `}>
+          <div
+            className={`mention-list-wrapper ${
+              mentionListVisible ? "" : "invisible"
+            }`}
+          >
             {room && (
               <MentionList
                 members={room.members}
-                isVisible={mentionListVisible}
+                close={() => setMentionListVisible(false)}
+                onMentionSelect={onMentionSelect}
               />
             )}
           </div>
-
-          {/* const  = ({
-  members,
-  isVisible,
-  toggleVisibility,
-  */}
 
           <textarea
             id="chat-input-box"
@@ -223,6 +266,20 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
             rows={6}
             ref={inputRef}
           />
+          {quote && (
+            <div className="quoted-content-wrapper">
+              <div className="quoted-content">
+                <div>{`${quote.senderProfile.nickname}: ${quote.content}`}</div>
+              </div>
+              <div className="delete-quote-icon">
+                <RxCross2
+                  style={{ color: "#FFFFFF", cursor: "pointer" }}
+                  size="1em"
+                  onClick={() => setQuote(null)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -244,14 +301,15 @@ const MemberList = ({
 
   const hidePopup = (evt: MouseEvent) => {
     // accessing membersPopupVisible always return false, no idea why
+    let tgt = evt.target as HTMLElement;
     if (
       // this is the toggle button for pop-up, we let button handle the visibility
-      (evt.target as HTMLElement).closest(".group-member-icon-wrapper") != null
+      tgt.closest(".group-member-icon-wrapper") != null
     ) {
       return;
     }
     // if mouse click happens outside the pop-up, close it.
-    if ((evt.target as HTMLElement).closest(".room-member-list") == null) {
+    if (tgt.closest(".room-member-list") == null) {
       toggleVisibility(false);
     }
   };
@@ -285,28 +343,25 @@ const MemberList = ({
   );
 };
 
-// <MentionList members={room?.members} isVisible={mentionListVisible} toggleVisibility={mentionListVisible} />
 const MentionList = ({
   members,
-  isVisible,
-}: // toggleVisibility,
-{
+  close,
+  onMentionSelect,
+}: {
   members: number[];
-  isVisible: boolean;
-  // toggleVisibility: (v: boolean) => void;
+  close: () => void;
+  onMentionSelect: (evt: any) => void;
 }) => {
   const profileList = useSelector((state: RootState) => state.profileList);
-
-  /*
   const hideMentionList = (evt: MouseEvent) => {
-    if (
-      (evt.target as HTMLElement).closest(".emoji-button-wrapper") != null
-    ) {
-      toggleEmoji();
+    let tgt = evt.target as HTMLElement;
+    // mention iocn was clicked, ignore it, otherwise, the outside cilck handler will be triggered.
+    if (tgt.closest(".mention-button-wrapper") != null) {
       return;
     }
-    if ((evt.target as HTMLElement).closest(".emoji-wrapper") == null) {
-      setEmojiVisible(false);
+    // outside mention list wrapper was clicked
+    if (tgt.closest(".mention-list-wrapper") == null) {
+      close();
     }
   };
 
@@ -314,15 +369,18 @@ const MentionList = ({
     document.addEventListener("click", hideMentionList);
     return () => document.removeEventListener("click", hideMentionList);
   }, []);
-  */
 
   return (
-    <div className={`mention-list ${isVisible ? "" : "invisible"}`}>
+    <div className={`mention-list`}>
       {members.map((m) => {
         let user = profileList.list.find((p) => p.userId === m);
-
         return (
-          <div className="mention-item" key={m}>
+          <div
+            className="mention-item"
+            key={m}
+            data-mention-id={user?.userId}
+            onClick={onMentionSelect}
+          >
             <div style={{ width: "30%" }}>
               <Avatar src={`/chat/images/avatar/${user?.userId}.jpg`} />
             </div>
@@ -339,15 +397,35 @@ const MentionList = ({
 interface IMessageProps {
   msg: IMessage;
   profile: IProfile;
+  setQuote: (msg: IMessage) => void;
 }
 
-const Message = ({ msg, profile }: IMessageProps) => {
+const Message = ({ msg, profile, setQuote }: IMessageProps) => {
+  const [quoteVisible, setQuoteVisible] = useState(false);
   let sentByMe = msg.senderProfile.userId === profile.userId;
+  let quoteDiv = (
+    <div
+      className={`quote-wrapper ${sentByMe ? "by-me" : "by-others"} ${
+        quoteVisible ? "" : "invisible"
+      }`}
+    >
+      <div onClick={() => setQuote(msg)}>
+        <FaQuoteLeft
+          size="0.8em"
+          style={{ color: "#C9C7D0", cursor: "pointer" }}
+        />{" "}
+      </div>
+      <div>
+        <RiDeleteBin5Line
+          size="0.8em"
+          style={{ color: "#C9C7D0", cursor: "pointer" }}
+        />{" "}
+      </div>
+    </div>
+  );
+
   let avatarDiv = (
     <div>
-      {/*<Avatar style={{ backgroundColor: "#f56a00" }} size="large">
-        {msg.senderProfile.nickname[0]}
-  </Avatar>*/}
       <Avatar src={`/chat/images/avatar/${msg.senderProfile.userId}.jpg`} />
     </div>
   );
@@ -372,11 +450,24 @@ const Message = ({ msg, profile }: IMessageProps) => {
       >
         {msg.content}
       </div>
+      {msg.quote == null ? null : (
+        <div className="quoted-content-wrapper">
+          <div className="quoted-content">
+            <div>{`${msg.quote.senderProfile.nickname}: ${msg.quote.content}`}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
   return (
-    <div className={sentByMe ? "sent-by-me" : "sent-by-others"}>
+    <div
+      className={sentByMe ? "sent-by-me" : "sent-by-others"}
+      style={{ position: "relative" }}
+      onMouseEnter={() => setQuoteVisible(true)}
+      onMouseLeave={() => setQuoteVisible(false)}
+    >
+      {sentByMe ? quoteDiv : null}
       <div className="content-wrapper">
         <div style={{ display: "flex" }}>
           {sentByMe ? (
@@ -391,6 +482,7 @@ const Message = ({ msg, profile }: IMessageProps) => {
           )}
         </div>
       </div>
+      {sentByMe ? null : quoteDiv}
     </div>
   );
 };

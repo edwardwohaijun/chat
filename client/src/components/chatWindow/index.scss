@@ -88,7 +88,7 @@ input:focus {
   display: none;
 }
 
-.memtion-list-wrapper {
+.mention-list-wrapper {
   width: 160px;
   height: 240px;
   // color: black;
@@ -99,7 +99,6 @@ input:focus {
   overflow-y: scroll;
   bottom: 132px;
   left: 60px;
-  // z-index: 2;
   .mention-list {
     .mention-item {
       display: flex;
@@ -111,6 +110,56 @@ input:focus {
       background-color: lightgray;
     }
   }
+}
+.mention-list-wrapper.invisible {
+  display: none;
+}
+
+.quoted-content-wrapper {
+  display: flex;
+  align-items: center;
+  width: 90%;
+  height: 40px;
+  overflow: hidden;
+  position: absolute;
+  bottom: -40px;
+  left: 12px;
+  border-radius: 8px;
+  // background-color: #35343e;
+}
+.quoted-content {
+  background-color: #35343e;
+  border-radius: 8px;
+  max-width: 60%;
+  color: #7b798f;
+  padding: 24px 12px;
+  div {
+    margin-left: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.quoted-content:before {
+  content: "";
+  position: absolute;
+  display: block;
+  border-top: 24px solid #04b17d;
+  width: 2px;
+  // margin: -49px 0px 0px -6px;
+}
+
+.delete-quote-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  margin-left: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+  border-radius: 12px;
 }
 
 .sent-by-me {
@@ -157,4 +206,25 @@ input:focus {
 .by-other {
   background-color: #454451;
   border-top-right-radius: 6px;
+}
+
+.quote-wrapper {
+  width: 100px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #616161;
+  margin-top: 24px;
+  background-color: #26252c;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.quote-wrapper.invisible {
+  display: none;
+}
+.quote-wrapper.by-me {
+  margin-right: 12px;
+}
+.quote-wrapper.by-others {
+  margin-left: 12px;
 }

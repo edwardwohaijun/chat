@@ -6,6 +6,7 @@ interface IMessageDocument {
   messageId: string;
   senderProfile: IUserDocument;
   mentions?: [number];
+  quote?: IMessageDocument;
   sentAt: string;
   content: string;
   type: "TEXT" | "PHOTO" | "FILE";
@@ -32,7 +33,11 @@ const messageSchema = new Schema(
       required: false,
       default: [],
     },
-
+    quote: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message", // embed another msg in current msg.
+      required: false,
+    },
     sentAt: {
       type: Schema.Types.String,
       required: false,
