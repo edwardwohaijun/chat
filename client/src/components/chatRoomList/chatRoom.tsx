@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-// import "./App.scss";
+import "./chatRoom.scss";
 import { Avatar, Badge } from "antd";
 import { IChatRoom } from "../../types";
 import {

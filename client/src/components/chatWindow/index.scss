@@ -115,6 +115,7 @@ input:focus {
   display: none;
 }
 
+// textarea 中的quote
 .quoted-content-wrapper {
   display: flex;
   align-items: center;
@@ -126,29 +127,71 @@ input:focus {
   left: 12px;
   border-radius: 8px;
   // background-color: #35343e;
-}
-.quoted-content {
-  background-color: #35343e;
-  border-radius: 8px;
-  max-width: 60%;
-  color: #7b798f;
-  padding: 24px 12px;
-  div {
-    margin-left: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+  .quoted-content {
+    background-color: #35343e;
+    border-radius: 8px;
+    max-width: 60%;
+    color: #7b798f;
+    padding: 24px 12px;
+    div {
+      margin-left: 12px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+  .quoted-content:before {
+    content: "";
+    position: absolute;
+    display: block;
+    border-top: 24px solid #04b17d;
+    width: 2px;
+    // margin: -49px 0px 0px -6px;
   }
 }
 
-.quoted-content:before {
-  content: "";
+// 发出的msg底部的quote, 和上面的类似, 但UI上有细微差别, 算了, 再定义一遍.
+// by-me, msg是我发, by-other, 他人发, 不是指quoted by me/other.
+.quoted-content--below-msg-wrapper.by-me {
+  right: 56px;
+}
+.quoted-content--below-msg-wrapper.by-others {
+  left: 56px;
+}
+.quoted-content--below-msg-wrapper {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  max-width: 50%;
+  height: 40px;
+  overflow: hidden;
   position: absolute;
-  display: block;
-  border-top: 24px solid #04b17d;
-  width: 2px;
-  // margin: -49px 0px 0px -6px;
+  border-radius: 8px;
+  .quoted-content-below-msg {
+    background-color: #35343e;
+    border-radius: 8px;
+    width: 100%;
+    color: #7b798f;
+    padding: 24px 12px;
+    div {
+      // this is the quoted text wrapping div
+      font-size: small;
+      margin-left: 12px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+  .quoted-content-below-msg:before {
+    content: "";
+    position: absolute;
+    display: block;
+    top: 8px;
+    border-top: 24px solid #04b17d;
+    width: 2px;
+  }
 }
 
 .delete-quote-icon {

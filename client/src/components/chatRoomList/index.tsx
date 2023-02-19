@@ -1,7 +1,10 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
-import "./chatRoom.scss";
+
+import { BsSearch } from "react-icons/bs";
+
+import "./index.scss";
 import { IChatRoom } from "../../types";
 import {
   addChatRoom,
@@ -17,14 +20,13 @@ const ChatRoomList = () => {
 
   return (
     <div>
-      <div
-        style={{
-          borderBottom: "1px solid #454451",
-          height: "64px",
-          color: "#7B798F",
-        }}
-      >
-        search
+      <div className="search-box-wrapper">
+        <div className="search-box">
+          <div className="icon">
+            <BsSearch />
+          </div>
+          <input className="search-input" placeholder="Search" />
+        </div>
       </div>
       {rooms.list.map((r) => (
         <ChatRoom

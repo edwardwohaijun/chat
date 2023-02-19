@@ -23,10 +23,10 @@ function AppHeader() {
       <div>logo</div>
       <div>
         <div>
-          {" "}
-          <Avatar style={{ backgroundColor: "#f56a00" }} size="large">
-            {profile.nickname[0]}
-          </Avatar>
+          <Avatar src={`/chat/images/avatar/${profile.userId}.jpg`} />{" "}
+          <span style={{ marginLeft: "8px", color: "#FFFFFF" }}>
+            {profile.nickname}
+          </span>
         </div>
       </div>
     </div>

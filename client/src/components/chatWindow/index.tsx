@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Avatar } from "antd";
 import { BsPeople, BsEmojiSmile } from "react-icons/bs";
-import { MdOutlineAlternateEmail } from "react-icons/md";
+import { MdOutlineAlternateEmail, MdSquareFoot } from "react-icons/md";
 import { FaQuoteLeft } from "react-icons/fa";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { RxCross2 } from "react-icons/rx";
@@ -114,19 +114,15 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     }
   };
 
-  /*
-  useEffect(() => {
-    if (inputRef === null) return;
-    if (inputRef.current === null) return;
-    // inputRef.current.setSelectionRange(curserPos.current, curserPos.current);
-  }, [msg]);
-  */
-
   // make msgList window alaways scroll to the bottom, but only when msgList or room have changed.
   // add a dummy invisible div at the bottom, always scroll into this div.
   useEffect(() => {
     dummyMsgRef.current?.scrollIntoView();
   }, [room, messageList]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [quote]);
 
   useEffect(() => {
     const hideEmoji = (evt: MouseEvent) => {
@@ -403,7 +399,8 @@ interface IMessageProps {
 const Message = ({ msg, profile, setQuote }: IMessageProps) => {
   const [quoteVisible, setQuoteVisible] = useState(false);
   let sentByMe = msg.senderProfile.userId === profile.userId;
-  let quoteDiv = (
+  // the floating div showing 'quote', 'delete(not implemented)' button
+  let quoteTool = (
     <div
       className={`quote-wrapper ${sentByMe ? "by-me" : "by-others"} ${
         quoteVisible ? "" : "invisible"
@@ -451,8 +448,12 @@ const Message = ({ msg, profile, setQuote }: IMessageProps) => {
         {msg.content}
       </div>
       {msg.quote == null ? null : (
-        <div className="quoted-content-wrapper">
-          <div className="quoted-content">
+        <div
+          className={`quoted-content--below-msg-wrapper ${
+            sentByMe ? "by-me" : "by-others"
+          }`}
+        >
+          <div className="quoted-content-below-msg">
             <div>{`${msg.quote.senderProfile.nickname}: ${msg.quote.content}`}</div>
           </div>
         </div>
@@ -461,28 +462,31 @@ const Message = ({ msg, profile, setQuote }: IMessageProps) => {
   );
 
   return (
-    <div
-      className={sentByMe ? "sent-by-me" : "sent-by-others"}
-      style={{ position: "relative" }}
-      onMouseEnter={() => setQuoteVisible(true)}
-      onMouseLeave={() => setQuoteVisible(false)}
-    >
-      {sentByMe ? quoteDiv : null}
-      <div className="content-wrapper">
-        <div style={{ display: "flex" }}>
-          {sentByMe ? (
-            <React.Fragment>
-              {txtDiv}
-              {avatarDiv}{" "}
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              {avatarDiv} {txtDiv}
-            </React.Fragment>
-          )}
+    <React.Fragment>
+      <div
+        className={sentByMe ? "sent-by-me" : "sent-by-others"}
+        style={{ position: "relative" }}
+        onMouseEnter={() => setQuoteVisible(true)}
+        onMouseLeave={() => setQuoteVisible(false)}
+      >
+        {sentByMe ? quoteTool : null}
+        <div className="content-wrapper">
+          <div style={{ display: "flex" }}>
+            {sentByMe ? (
+              <React.Fragment>
+                {txtDiv}
+                {avatarDiv}{" "}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {avatarDiv} {txtDiv}
+              </React.Fragment>
+            )}
+          </div>
         </div>
+        {sentByMe ? null : quoteTool}
       </div>
-      {sentByMe ? null : quoteDiv}
-    </div>
+      {msg.quote && <div style={{ height: "32px" }}></div>}
+    </React.Fragment>
   );
 };
