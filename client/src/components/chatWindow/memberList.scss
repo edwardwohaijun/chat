@@ -1,0 +1,15 @@
+.room-member-list {
+  position: absolute;
+  padding: 6px 0;
+  width: 220px;
+  height: 420px;
+  right: 16px;
+  top: 114px;
+  overflow: auto;
+  border-radius: 8px;
+  background-color: #454451;
+  z-index: 1;
+}
+.room-member-list.invisible {
+  visibility: hidden;
+}

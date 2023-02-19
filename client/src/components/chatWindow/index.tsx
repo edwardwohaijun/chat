@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Avatar } from "antd";
 import { BsPeople, BsEmojiSmile } from "react-icons/bs";
 import { MdOutlineAlternateEmail, MdSquareFoot } from "react-icons/md";
-import { FaQuoteLeft } from "react-icons/fa";
-import { RiDeleteBin5Line } from "react-icons/ri";
 import { RxCross2 } from "react-icons/rx";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { validateMention } from "../../utilis";
@@ -12,7 +10,6 @@ import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "../../redux/store";
 import {
-  IMessageList,
   messageIdUpdateType,
   IChatRoom,
   IMessage,
@@ -30,6 +27,9 @@ import {
   initializeChatRooms,
   updateUnreadCount,
 } from "../../redux/reducers/chatRoomList";
+import Message from "./message";
+import MentionList from "./mentionList";
+import MemberList from "./memberList";
 import { setProfile } from "../../redux/reducers/profile";
 import { v4 as uuid } from "uuid";
 import Socket from "../../services/socket";
@@ -39,7 +39,6 @@ interface IChatWindowProps {
   profile: IProfile; // current user's profile
   room: IChatRoom | undefined; // current active chatRoom. active room could be null
   messageList: IMessage[]; // all msg in current chat room
-  // sendMessage: () => void;
 }
 
 const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
@@ -49,7 +48,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   let [mentionListVisible, setMentionListVisible] = useState(false);
   const [mentioned, setMentioned] = useState<MentionedUser | null>(null); // key: userId, value: nickname. after sending the msg, reset this obj.
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const curserPos = useRef(msg.length);
+  // const curserPos = useRef(msg.length);
   const [quote, setQuote] = useState<IMessage | null>(null);
 
   const profileList = useSelector((state: RootState) => state.profileList);
@@ -90,32 +89,54 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   };
 
   const onMentionSelect = (evt: any) => {
+    setMentionListVisible(false);
+    inputRef.current?.focus();
+    let currentPos = inputRef.current!.selectionStart;
+
     // onclick is defined on the parent div, but click might occur on 2 children div
     // we need to go up and search for parent class, and get the data attribute.
     let tgt = evt.target.closest(".mention-item");
     let mentionedId = Number(tgt.dataset.mentionId);
     let user = profileList.list.find((p) => p.userId === mentionedId);
     let newMsg =
-      msg.substring(0, curserPos.current) +
+      msg.substring(0, currentPos) +
       `@${user?.nickname} ` +
-      msg.substring(curserPos.current);
-    curserPos.current =
-      inputRef.current!.selectionStart + user!.nickname.length + 2; // '@' character and the space after @****
+      msg.substring(currentPos);
 
     setMsg(newMsg);
-    setMentionListVisible(false);
-    inputRef.current?.focus();
     setMentioned({
       ...mentioned,
       [mentionedId]: user?.nickname,
     } as MentionedUser);
+
+    setTimeout(() => {
+      inputRef.current!.selectionStart = currentPos + user!.nickname.length + 2; // '@' character and the following space after "@****"
+      inputRef.current!.selectionEnd = currentPos + user!.nickname.length + 2;
+    }, 0);
+  };
+
+  const onEmojiSelect = (emojiData: EmojiClickData, event: MouseEvent) => {
+    toggleEmoji();
+    inputRef.current?.focus();
+    let currentPos = inputRef.current!.selectionStart;
+
+    let newMsg =
+      msg.substring(0, currentPos) +
+      emojiData.emoji +
+      msg.substring(currentPos);
+    setMsg(newMsg);
+
+    // without timeout, after emoji insert, cursor always stay at the end.
+    setTimeout(() => {
+      inputRef.current!.selectionStart = currentPos + 1;
+      inputRef.current!.selectionEnd = currentPos + 1;
+    }, 0);
   };
 
   // const onKeyUp = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
   const onKeyUp = (evt: any) => {
-    // console.log("start: ", evt.target.selectionStart);
     // people might not be typing text, but pressing arrow key to move cursor position.
-    curserPos.current = inputRef.current!.selectionStart;
+    // curserPos.current = inputRef.current!.selectionStart;
     if (evt.key.toLowerCase() === "enter" && evt.shiftKey) {
     } else if (evt.key.toLowerCase() === "enter") {
       sendMessage();
@@ -179,7 +200,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
     });
   }, []);
 
-  // console.log("mentioned: ", mentioned);
   return (
     <div>
       <div className="header-wrapper">
@@ -236,15 +256,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
             <EmojiPicker
               height={450}
               width={320}
-              onEmojiClick={(emojiData: EmojiClickData, event: MouseEvent) => {
-                let newMsg =
-                  msg.substring(0, curserPos.current) +
-                  emojiData.emoji +
-                  msg.substring(curserPos.current);
-                setMsg(newMsg);
-                toggleEmoji();
-                inputRef.current?.focus();
-              }}
+              onEmojiClick={onEmojiSelect}
             />
           </div>
           <div
@@ -290,210 +302,3 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
 };
 
 export default ChatWindow;
-
-const MemberList = ({
-  members,
-  isVisible,
-  toggleVisibility,
-}: {
-  members: number[];
-  isVisible: boolean;
-  toggleVisibility: (v: boolean) => void;
-}) => {
-  const profileList = useSelector((state: RootState) => state.profileList);
-
-  const hidePopup = (evt: MouseEvent) => {
-    // accessing membersPopupVisible always return false, no idea why
-    let tgt = evt.target as HTMLElement;
-    if (
-      // this is the toggle button for pop-up, we let button handle the visibility
-      tgt.closest(".group-member-icon-wrapper") != null
-    ) {
-      return;
-    }
-    // if mouse click happens outside the pop-up, close it.
-    if (tgt.closest(".room-member-list") == null) {
-      toggleVisibility(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", hidePopup);
-    return () => document.removeEventListener("click", hidePopup);
-  }, []);
-
-  return (
-    <div className={`room-member-list ${isVisible ? "" : "invisible"}`}>
-      {members.map((m) => {
-        let user = profileList.list.find((p) => p.userId === m);
-
-        return (
-          <div
-            key={m}
-            style={{ display: "flex", alignItems: "center", height: "48px" }}
-          >
-            <div style={{ width: "30%" }}>
-              <Avatar src={`/chat/images/avatar/${user?.userId}.jpg`} />
-            </div>
-
-            <span style={{ width: "70%", color: "white", textAlign: "left" }}>
-              {user?.nickname}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const MentionList = ({
-  members,
-  close,
-  onMentionSelect,
-}: {
-  members: number[];
-  close: () => void;
-  onMentionSelect: (evt: any) => void;
-}) => {
-  const profileList = useSelector((state: RootState) => state.profileList);
-  const hideMentionList = (evt: MouseEvent) => {
-    let tgt = evt.target as HTMLElement;
-    // mention iocn was clicked, ignore it, otherwise, the outside cilck handler will be triggered.
-    if (tgt.closest(".mention-button-wrapper") != null) {
-      return;
-    }
-    // outside mention list wrapper was clicked
-    if (tgt.closest(".mention-list-wrapper") == null) {
-      close();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", hideMentionList);
-    return () => document.removeEventListener("click", hideMentionList);
-  }, []);
-
-  return (
-    <div className={`mention-list`}>
-      {members.map((m) => {
-        let user = profileList.list.find((p) => p.userId === m);
-        return (
-          <div
-            className="mention-item"
-            key={m}
-            data-mention-id={user?.userId}
-            onClick={onMentionSelect}
-          >
-            <div style={{ width: "30%" }}>
-              <Avatar src={`/chat/images/avatar/${user?.userId}.jpg`} />
-            </div>
-            <span style={{ width: "70%", textAlign: "left" }}>
-              {user?.nickname}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-interface IMessageProps {
-  msg: IMessage;
-  profile: IProfile;
-  setQuote: (msg: IMessage) => void;
-}
-
-const Message = ({ msg, profile, setQuote }: IMessageProps) => {
-  const [quoteVisible, setQuoteVisible] = useState(false);
-  let sentByMe = msg.senderProfile.userId === profile.userId;
-  // the floating div showing 'quote', 'delete(not implemented)' button
-  let quoteTool = (
-    <div
-      className={`quote-wrapper ${sentByMe ? "by-me" : "by-others"} ${
-        quoteVisible ? "" : "invisible"
-      }`}
-    >
-      <div onClick={() => setQuote(msg)}>
-        <FaQuoteLeft
-          size="0.8em"
-          style={{ color: "#C9C7D0", cursor: "pointer" }}
-        />{" "}
-      </div>
-      <div>
-        <RiDeleteBin5Line
-          size="0.8em"
-          style={{ color: "#C9C7D0", cursor: "pointer" }}
-        />{" "}
-      </div>
-    </div>
-  );
-
-  let avatarDiv = (
-    <div>
-      <Avatar src={`/chat/images/avatar/${msg.senderProfile.userId}.jpg`} />
-    </div>
-  );
-  let txtDiv = (
-    <div style={sentByMe ? { marginRight: "16px" } : { marginLeft: "16px" }}>
-      <div
-        style={{
-          color: "#C9C7D0",
-          fontSize: "small",
-          marginBottom: "8px",
-          textAlign: sentByMe ? "right" : "unset",
-        }}
-      >
-        <span style={{ marginRight: "12px", color: "#C9C7D0" }}>
-          {msg.senderProfile.nickname}
-        </span>
-        <span style={{ color: "#7B798F" }}>{msg.sentAt}</span>
-      </div>
-      <div
-        className={`message-content '
-          ${sentByMe ? "by-me" : "by-other"}`}
-      >
-        {msg.content}
-      </div>
-      {msg.quote && (
-        <div
-          className={`quoted-content--below-msg-wrapper ${
-            sentByMe ? "by-me" : "by-others"
-          }`}
-        >
-          <div className="quoted-content-below-msg">
-            <div>{`${msg.quote.senderProfile.nickname}: ${msg.quote.content}`}</div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  return (
-    <React.Fragment>
-      <div
-        className={sentByMe ? "sent-by-me" : "sent-by-others"}
-        style={{ position: "relative" }}
-        onMouseEnter={() => setQuoteVisible(true)}
-        onMouseLeave={() => setQuoteVisible(false)}
-      >
-        {sentByMe ? quoteTool : null}
-        <div className="content-wrapper">
-          <div style={{ display: "flex" }}>
-            {sentByMe ? (
-              <React.Fragment>
-                {txtDiv}
-                {avatarDiv}{" "}
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                {avatarDiv} {txtDiv}
-              </React.Fragment>
-            )}
-          </div>
-        </div>
-        {sentByMe ? null : quoteTool}
-      </div>
-      {msg.quote && <div style={{ height: "32px" }}></div>}
-    </React.Fragment>
-  );
-};
