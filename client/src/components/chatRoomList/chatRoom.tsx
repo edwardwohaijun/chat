@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
+import type { RootState } from "../../redux/store";
 import "./chatRoom.scss";
 import { Avatar, Badge } from "antd";
 import { IChatRoom } from "../../types";
@@ -17,6 +18,10 @@ interface IChatRoomProps {
 }
 
 const ChatRoom = ({ room, activeRoomId, setActive }: IChatRoomProps) => {
+  const profile = useSelector((state: RootState) => state.profile);
+  const mentioned =
+    room.lastMsg?.mentions?.findIndex((m) => m == profile.userId) !== -1;
+
   let lastMsgBy = "";
   let lastMsg = "";
   let lastMsgSentAt = "";
@@ -24,7 +29,11 @@ const ChatRoom = ({ room, activeRoomId, setActive }: IChatRoomProps) => {
     lastMsgBy = room.lastMsg.senderProfile.nickname;
     lastMsg = room.lastMsg.content;
     lastMsgSentAt = room.lastMsg.sentAt;
+    if (mentioned) {
+      lastMsg = "You are mentioned.";
+    }
   }
+
   return (
     <div
       className={`room-item ${activeRoomId === room.roomId ? "active" : ""}`}
@@ -44,16 +53,7 @@ const ChatRoom = ({ room, activeRoomId, setActive }: IChatRoomProps) => {
             {lastMsgSentAt}
           </div>
         </div>
-        <div
-          style={{
-            color: "#7B798F",
-            textAlign: "left",
-            fontSize: "small",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-          }}
-        >
+        <div className={`last-msg ${mentioned ? "mentioned" : ""}`}>
           {lastMsg ? `${lastMsgBy}: ${lastMsg}` : ""}
         </div>
       </div>

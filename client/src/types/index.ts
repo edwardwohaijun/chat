@@ -30,6 +30,11 @@ export type messageIdUpdateType = {
   new: string;
 };
 
+// mention: check which nickname exist in to-be-sent message.
+export type MentionedUser = {
+  [key: number]: string;
+} | null;
+
 export interface IMessage {
   _id?: string;
   roomId: number;

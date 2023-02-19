@@ -6,6 +6,7 @@ import { FaQuoteLeft } from "react-icons/fa";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { RxCross2 } from "react-icons/rx";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import { validateMention } from "../../utilis";
 
 import "./index.scss";
 import { useSelector, useDispatch } from "react-redux";
@@ -16,6 +17,7 @@ import {
   IChatRoom,
   IMessage,
   IProfile,
+  MentionedUser,
 } from "../../types";
 import {
   initializeMessageList,
@@ -45,7 +47,7 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
   let [membersPopupVisible, setMembersPopupVisible] = useState(false);
   let [emojiVisible, setEmojiVisible] = useState(false);
   let [mentionListVisible, setMentionListVisible] = useState(false);
-  const [mentioned, setMentioned] = useState({}); // key: userId, value: nickname. after sending the msg, reset this obj.
+  const [mentioned, setMentioned] = useState<MentionedUser | null>(null); // key: userId, value: nickname. after sending the msg, reset this obj.
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const curserPos = useRef(msg.length);
   const [quote, setQuote] = useState<IMessage | null>(null);
@@ -74,33 +76,39 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       senderProfile: profile,
       sentAt: new Date().toLocaleTimeString(),
       content: msg,
-      // quote: quote,
       type: "TEXT",
     };
     if (quote != null) m.quote = quote;
+
+    m.mentions = validateMention(m.content, mentioned);
     socket.emit("newMessage", m);
     dispatch(addMessage(m));
     dispatch(updateLastMsg(m));
     setMsg("");
     setQuote(null);
-    setMentioned({});
+    setMentioned(null);
   };
 
   const onMentionSelect = (evt: any) => {
     // onclick is defined on the parent div, but click might occur on 2 children div
     // we need to go up and search for parent class, and get the data attribute.
     let tgt = evt.target.closest(".mention-item");
-    console.log("on mention select: ", tgt.dataset.mentionId);
     let mentionedId = Number(tgt.dataset.mentionId);
     let user = profileList.list.find((p) => p.userId === mentionedId);
     let newMsg =
       msg.substring(0, curserPos.current) +
       `@${user?.nickname} ` +
       msg.substring(curserPos.current);
+    curserPos.current =
+      inputRef.current!.selectionStart + user!.nickname.length + 2; // '@' character and the space after @****
+
     setMsg(newMsg);
     setMentionListVisible(false);
     inputRef.current?.focus();
-    setMentioned({ ...mentioned, [mentionedId]: user?.nickname });
+    setMentioned({
+      ...mentioned,
+      [mentionedId]: user?.nickname,
+    } as MentionedUser);
   };
 
   // const onKeyUp = (evt: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -151,7 +159,6 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       });
 
       socket.on("newMessage", (m: any) => {
-        console.log("what happened, why so many new msg", m);
         dispatch(addMessage(m));
         dispatch(updateLastMsg(m));
         dispatch(updateUnreadCount(m));
@@ -447,7 +454,7 @@ const Message = ({ msg, profile, setQuote }: IMessageProps) => {
       >
         {msg.content}
       </div>
-      {msg.quote == null ? null : (
+      {msg.quote && (
         <div
           className={`quoted-content--below-msg-wrapper ${
             sentByMe ? "by-me" : "by-others"

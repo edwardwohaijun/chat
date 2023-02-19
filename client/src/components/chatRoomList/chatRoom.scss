@@ -9,3 +9,15 @@
 .room-item.active {
   background-color: #26252d;
 }
+
+.last-msg {
+  color: #7b798f;
+  text-overflow: ellipsis;
+  text-align: left;
+  font-size: small;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.last-msg.mentioned {
+  color: red;
+}
