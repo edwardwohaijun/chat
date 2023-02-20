@@ -28,4 +28,4 @@ npm start
 
 open http://localhost:3000/chat in Chrome browser.
 
-If you have some trouble restoring the mongoDB dump file, just login mongo shell, then run the following:
+If you have some trouble restoring the mongoDB dump file, just log into mongo shell, then copy all the commands in /mongoDum/mongoImportCommands.txt, then paste them in mongo shell.

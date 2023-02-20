@@ -1,0 +1,26 @@
+use chat;
+
+db.chatrooms.insertOne({name: "General", roomId: 0, members: []});
+db.chatrooms.insertOne({name: "MCU", roomId: 1, members: []});
+db.chatrooms.insertOne({name: "DC Universe", roomId: 2, members: []});
+
+db.users.insertOne({userId: 0, nickname: 'superman'});
+db.users.insertOne({userId: 1, nickname: 'batman'});
+db.users.insertOne({userId: 2, nickname: 'wonder woman'});
+db.users.insertOne({userId: 3, nickname: 'flash'});
+db.users.insertOne({userId: 4, nickname: 'aquaman'});
+db.users.insertOne({userId: 5, nickname: 'joker'});
+db.users.insertOne({userId: 6, nickname: 'riddler'});
+db.users.insertOne({userId: 7, nickname: 'Darkseid'});
+db.users.insertOne({userId: 8, nickname: 'Harley Quinn'});
+db.users.insertOne({userId: 9, nickname: 'Cyborg'});
+db.users.insertOne({userId: 10, nickname: 'iron-man'});
+db.users.insertOne({userId: 11, nickname: 'Captain A'});
+db.users.insertOne({userId: 12, nickname: 'Thor'});
+db.users.insertOne({userId: 13, nickname: 'Hulk'});
+db.users.insertOne({userId: 14, nickname: 'black widow'});
+db.users.insertOne({userId: 15, nickname: 'spider man'});
+db.users.insertOne({userId: 16, nickname: 'Wong'});
+db.users.insertOne({userId: 17, nickname: 'Thanos'});
+db.users.insertOne({userId: 18, nickname: 'Scarlet Witch'});
+db.users.insertOne({userId: 19, nickname: 'Ant man'});
