@@ -21,7 +21,7 @@ app.use(cors(options));
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
 app.use(bodyParser.json());
-app.use(router);
+// app.use(router);
 
 const jsonErrorHandler = (
   err: HttpError,
@@ -60,9 +60,6 @@ app.use((req, res, next) => {
   console.log("connected to mongoDB...");
   // when app start, reset all online to false, otherwise, those fake 'online' users still hold the account.
   await User.updateMany({}, { $set: { isOnline: false } });
-
-  // const u: IUserDocument | null = await User.findOne({});
-  // console.log("found one: ", u);
 })();
 
 socketService(io);

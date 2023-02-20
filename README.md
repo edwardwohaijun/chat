@@ -24,5 +24,6 @@ npm run dev
 cd chat/client
 npm install
 npm start
-
 ```
+
+open http://localhost:3000/chat in Chrome browser.
