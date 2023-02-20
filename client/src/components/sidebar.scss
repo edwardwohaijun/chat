@@ -1,0 +1,33 @@
+.app-entry {
+  height: 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.section-header {
+  color: rgb(121, 123, 133);
+  text-align: left;
+  margin-bottom: 24px;
+}
+.app-entry-wrapper {
+  width: 100%;
+  display: flex;
+}
+.app-entry-description {
+  width: 70%;
+  display: flex;
+  color: rgb(146, 150, 153);
+  margin: 18px;
+  justify-content: start;
+  align-items: center;
+}
+.app-entry-description.active {
+  color: #04b17d;
+}
+
+.app-entry-icon {
+  width: 30%;
+  display: flex;
+  align-items: center;
+}

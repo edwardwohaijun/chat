@@ -124,9 +124,18 @@ const ChatWindow = ({ profile, room, messageList }: IChatWindowProps) => {
       msg.substring(0, currentPos) +
       emojiData.emoji +
       msg.substring(currentPos);
+
+    /*
+    let chars = Array.from(msg);
+    let newMsg =
+      chars.slice(0, currentPos).join("") +
+      emojiData.emoji +
+      chars.slice(currentPos).join("");
+*/
+
     setMsg(newMsg);
 
-    // without timeout, after emoji insert, cursor always stay at the end.
+    // without timeout, after emoji insert, cursor always goes to  the end.
     setTimeout(() => {
       inputRef.current!.selectionStart = currentPos + 1;
       inputRef.current!.selectionEnd = currentPos + 1;
