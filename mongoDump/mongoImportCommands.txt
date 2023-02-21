@@ -1,8 +1,8 @@
 use chat;
 
-db.chatrooms.insertOne({name: "General", roomId: 0, members: []});
-db.chatrooms.insertOne({name: "MCU", roomId: 1, members: []});
-db.chatrooms.insertOne({name: "DC Universe", roomId: 2, members: []});
+db.chatrooms.insertOne({name: "General", roomId: 0, members: [0,  1,  2,  3,  4,  5,  6, 7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]});
+db.chatrooms.insertOne({name: "MCU", roomId: 1, members: [ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]});
+db.chatrooms.insertOne({name: "DC Universe", roomId: 2, members: [  0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]});
 
 db.users.insertOne({userId: 0, nickname: 'superman'});
 db.users.insertOne({userId: 1, nickname: 'batman'});
