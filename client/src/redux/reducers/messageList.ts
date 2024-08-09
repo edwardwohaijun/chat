@@ -17,7 +17,11 @@ export const messageListSlice = createSlice({
       // TODO: use findLastIndex.
       let idx = state.list.findIndex((m) => m.messageId === action.payload.old);
       if (idx !== -1) {
+        // immer lib
         state.list[idx]._id = action.payload.new;
+        // let newState = *****;   Object.assign({}, ...object, action.payload)
+        //
+        // return newState
       }
     },
     addMessage: (state, action: PayloadAction<IMessage>) => {

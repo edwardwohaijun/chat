@@ -47,7 +47,11 @@ const socketService = (io: any) => {
       });
       */
 
-      const msgList = await Message.find({}).populate("quote").exec();
+      const msgList = await Message.find({
+        roomId: { $in: chatRoomList.map((r) => r.roomId) },
+      })
+        .populate("quote")
+        .exec();
 
       socket.data.userId = profile?.userId;
       socket.emit("loginResponse", {
